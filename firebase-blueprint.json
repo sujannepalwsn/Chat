@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "App user information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["USER", "ADMIN"] },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "username", "role", "isActive", "createdAt"]
+    },
+    "Group": {
+      "title": "Group",
+      "description": "Conversation group.",
+      "type": "object",
+      "properties": {
+        "groupId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupId", "name", "createdAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Text message.",
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "type": { "type": "string", "enum": ["TEXT", "IMAGE", "VIDEO"] },
+        "mediaUrl": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["messageId", "senderId", "type", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profile data."
+    },
+    "/groups/{groupId}": {
+      "schema": "Group",
+      "description": "Group metadata."
+    },
+    "/groups/{groupId}/members/{uid}": {
+      "schema": "User",
+      "description": "Group members."
+    },
+    "/groups/{groupId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Group messages."
+    },
+    "/conversations/{convId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "1:1 messages."
+    }
+  }
+}

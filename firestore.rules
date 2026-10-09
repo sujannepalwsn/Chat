@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); 
+    }
+    function isUser(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    
+    // Validation helpers
+    function isValidUser(data) {
+      return data.uid is string && data.username is string && data.role in ['USER', 'ADMIN'] && data.isActive is bool && data.createdAt is timestamp;
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid} {
+      allow get, list: if isSignedIn() && (isUser(uid) || isAdmin());
+      allow create: if isAdmin() && isValidUser(request.resource.data);
+      allow update: if isAdmin() && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    
+    match /groups/{groupId} {
+      allow read: if isSignedIn(); // Simplified for now - need member check
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Further rules to be added
+  }
+}
